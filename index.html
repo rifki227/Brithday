@@ -146,7 +146,7 @@ section{min-height:100vh;display:flex;flex-direction:column;align-items:center;j
   opacity:0;transform:translateY(20px);
   transition:opacity .55s ease,transform .55s ease,border-color .3s;
 }
-.photo-grid-item:first-child{grid-row:span 2;aspect-ratio:unset;}
+.photo-grid-item:first-child{grid-row:span 1;aspect-ratio:1;}
 .photo-grid-item.in{opacity:1;transform:translateY(0);}
 .photo-grid-item:nth-child(1){transition-delay:.05s;}
 .photo-grid-item:nth-child(2){transition-delay:.12s;}
@@ -482,7 +482,6 @@ const CONFIG = {
     'Hari yang Cerah',
     'Bersama Selamanya',
     'Momen Istimewa',
-    'Kenangan Indah',
     'Mata Terindah',
     'Sempurna',
   ],
@@ -496,6 +495,7 @@ const CONFIG = {
     { url:'images/5.jpeg', name:'Selamat Ulang Tahun' },
     { url:'images/7.jpeg', name:'Selamat Ulang Tahun' },
     { url:'images/8.jpeg', name:'Selamat Ulang Tahun' },
+    { url:'images/3.jpeg', name:'Selamat Ulang Tahun' },
   ],
 
   // Foto default grid 6 (path relatif, kosongkan '' jika belum ada)
