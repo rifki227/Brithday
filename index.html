@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Happy Birthday 🎂</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --black: #0d0d0d;
+  --deep: #1a1a1a;
+  --maroon: #800000;
+  --maroon-light: #a00000;
+  --maroon-glow: rgba(128,0,0,0.5);
+  --gold: #c9a84c;
+  --gold-light: #e8c97a;
+  --white: #f5f0eb;
+  --white-dim: rgba(245,240,235,0.75);
+  --serif: 'Playfair Display', Georgia, serif;
+  --sans: 'Montserrat', sans-serif;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--black);color:var(--white);font-family:var(--sans);overflow-x:hidden;cursor:none;}
+
+/* ── Cursor ── */
+#cursor{position:fixed;width:12px;height:12px;background:var(--maroon);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:transform .15s,width .3s,height .3s,background .3s;}
+#cursor-ring{position:fixed;width:36px;height:36px;border:1px solid rgba(128,0,0,.6);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:width .3s,height .3s;}
+
+/* ── Canvas ── */
+#petal-canvas{position:fixed;inset:0;pointer-events:none;z-index:1;}
+
+/* ── Loader ── */
+#loader{position:fixed;inset:0;background:var(--black);z-index:8000;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .8s ease,visibility .8s ease;}
+#loader.gone{opacity:0;visibility:hidden;}
+.loader-text{font-family:var(--serif);font-size:clamp(1.4rem,4vw,2.2rem);color:var(--white-dim);letter-spacing:.15em;font-style:italic;animation:loaderPulse 1.8s ease-in-out infinite;}
+.loader-bar{margin-top:28px;width:200px;height:1px;background:rgba(128,0,0,.25);position:relative;overflow:hidden;}
+.loader-bar::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,var(--maroon),var(--gold),transparent);animation:loaderSweep 1.8s ease-in-out infinite;}
+@keyframes loaderSweep{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+@keyframes loaderPulse{0%,100%{opacity:.5}50%{opacity:1}}
+
+/* ── Layout ── */
+main{position:relative;z-index:2;}
+section{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:6rem 2rem;position:relative;}
+
+/* ── HERO ── */
+#hero{background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(128,0,0,.18) 0%,transparent 70%),radial-gradient(ellipse 60% 40% at 80% 80%,rgba(128,0,0,.10) 0%,transparent 60%),var(--black);text-align:center;overflow:hidden;}
+.hero-eyebrow{font-family:var(--sans);font-size:.7rem;font-weight:600;letter-spacing:.4em;text-transform:uppercase;color:var(--maroon-light);margin-bottom:2rem;opacity:0;animation:fadeUp 1s ease forwards .4s;}
+.hero-title{font-family:var(--serif);font-size:clamp(2.8rem,8vw,6.5rem);font-weight:700;line-height:1.05;margin-bottom:1.2rem;opacity:0;animation:fadeUp 1s ease forwards .7s;}
+.hero-title em{font-style:italic;background:linear-gradient(135deg,var(--maroon-light) 0%,var(--gold) 50%,var(--maroon-light) 100%);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:goldShimmer 4s linear infinite 1.5s;}
+@keyframes goldShimmer{to{background-position:200% center;}}
+.hero-sub{font-family:var(--serif);font-style:italic;font-size:clamp(1rem,2.5vw,1.35rem);color:var(--white-dim);max-width:500px;line-height:1.7;opacity:0;animation:fadeUp 1s ease forwards 1s;}
+.hero-line{width:80px;height:1px;background:linear-gradient(90deg,transparent,var(--maroon),transparent);margin:2.5rem auto;opacity:0;animation:fadeUp 1s ease forwards 1.3s;}
+.hero-date{font-size:.72rem;font-weight:500;letter-spacing:.3em;text-transform:uppercase;color:rgba(201,168,76,.7);opacity:0;animation:fadeUp 1s ease forwards 1.5s;}
+.hero-scroll{position:absolute;bottom:2.5rem;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:8px;opacity:0;animation:fadeUp 1s ease forwards 2s;}
+.hero-scroll span{font-size:.6rem;letter-spacing:.35em;text-transform:uppercase;color:rgba(245,240,235,.35);}
+.scroll-dot{width:1px;height:40px;background:linear-gradient(to bottom,var(--maroon),transparent);animation:scrollPulse 1.8s ease-in-out infinite;}
+@keyframes scrollPulse{0%,100%{opacity:.3;transform:scaleY(1)}50%{opacity:1;transform:scaleY(.7)}}
+
+/* ── Floating Hearts ── */
+.fheart{position:fixed;pointer-events:none;z-index:3;animation:floatUp linear forwards;opacity:0;}
+@keyframes floatUp{0%{transform:translateY(0) scale(1) rotate(-10deg);opacity:.7;}50%{transform:translateY(-50vh) scale(1.1) rotate(6deg);opacity:.4;}100%{transform:translateY(-110vh) scale(.7) rotate(14deg);opacity:0;}}
+
+/* ── PHOTO SECTION ── */
+#photo-section{background:radial-gradient(ellipse 100% 80% at 50% 50%,rgba(128,0,0,.12) 0%,transparent 70%),var(--deep);gap:3rem;}
+.photo-wrapper{position:relative;width:min(320px,80vw);aspect-ratio:1;}
+.pulse-ring{position:absolute;border-radius:50%;border:1px solid rgba(128,0,0,.4);animation:pulseRing 3s ease-out infinite;pointer-events:none;}
+.pulse-ring:nth-child(1){inset:-20px;animation-delay:0s;}
+.pulse-ring:nth-child(2){inset:-38px;animation-delay:1s;}
+.pulse-ring:nth-child(3){inset:-58px;animation-delay:2s;}
+@keyframes pulseRing{0%{opacity:.7;transform:scale(1);}100%{opacity:0;transform:scale(1.12);}}
+.photo-frame{width:100%;height:100%;border-radius:50%;border:2px solid var(--maroon);overflow:hidden;position:relative;animation:floatFrame 4s ease-in-out infinite;box-shadow:0 0 0 6px rgba(128,0,0,.12),0 0 0 12px rgba(128,0,0,.06),0 30px 80px rgba(128,0,0,.3);cursor:pointer;transition:box-shadow .4s ease;}
+.photo-frame:hover{box-shadow:0 0 0 6px rgba(128,0,0,.28),0 0 0 16px rgba(128,0,0,.1),0 40px 100px rgba(128,0,0,.5);}
+@keyframes floatFrame{0%,100%{transform:translateY(0) rotate(-1deg)}50%{transform:translateY(-16px) rotate(1deg)}}
+.photo-inner{width:100%;height:100%;background:linear-gradient(160deg,#2a0000 0%,#1a0000 40%,#3d0000 100%);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;transition:transform .5s ease;}
+.photo-frame:hover .photo-inner{transform:scale(1.05);}
+.orbit{position:absolute;border-radius:50%;border:1px solid;animation:orbitSpin 8s linear infinite;pointer-events:none;}
+.orbit-1{border-color:rgba(128,0,0,.35);inset:-22px;}
+.orbit-2{border-color:rgba(201,168,76,.15);inset:-40px;animation-direction:reverse;animation-duration:12s;}
+.orbit-dot{position:absolute;width:6px;height:6px;border-radius:50%;background:var(--maroon-light);top:-3px;left:50%;margin-left:-3px;box-shadow:0 0 8px var(--maroon-glow);}
+.orbit-2 .orbit-dot{background:var(--gold);box-shadow:0 0 8px rgba(201,168,76,.6);width:5px;height:5px;top:-2.5px;margin-left:-2.5px;}
+@keyframes orbitSpin{to{transform:rotate(360deg)}}
+.photo-label{text-align:center;}
+.photo-name{font-family:var(--serif);font-size:clamp(1.6rem,4vw,2.4rem);font-style:italic;color:var(--white);margin-bottom:.4rem;}
+.photo-tagline{font-size:.7rem;letter-spacing:.35em;text-transform:uppercase;color:var(--gold);opacity:.8;}
+
+/* ══════════════════════════════════════
+   GALLERY — CAROUSEL 3D + GRID 6 FOTO
+══════════════════════════════════════ */
+#gallery-section{
+  background:radial-gradient(ellipse 90% 60% at 50% 50%,rgba(128,0,0,.14) 0%,transparent 70%),var(--black);
+  padding:6rem 1rem;gap:3rem;min-height:unset;
+}
+.gallery-eyebrow{font-size:.65rem;font-weight:600;letter-spacing:.4em;text-transform:uppercase;color:var(--maroon-light);}
+.gallery-title{font-family:var(--serif);font-size:clamp(1.8rem,4vw,3rem);font-weight:600;line-height:1.2;text-align:center;}
+
+/* Upload zone */
+.gallery-upload-zone{display:flex;flex-direction:column;align-items:center;gap:12px;padding:20px 36px;border:1px dashed rgba(128,0,0,.45);border-radius:4px;cursor:pointer;transition:background .3s,border-color .3s;position:relative;max-width:860px;width:100%;}
+.gallery-upload-zone:hover{background:rgba(128,0,0,.07);border-color:rgba(201,168,76,.5);}
+.gallery-upload-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.upload-icon{font-size:1.8rem;}
+.upload-text{font-size:.75rem;letter-spacing:.2em;text-transform:uppercase;color:var(--white-dim);}
+.upload-sub{font-size:.65rem;color:rgba(245,240,235,.35);letter-spacing:.1em;}
+
+/* ── 3D Carousel ── */
+.carousel-label{font-size:.6rem;letter-spacing:.3em;text-transform:uppercase;color:rgba(245,240,235,.3);text-align:center;}
+.carousel-scene{width:100%;max-width:900px;height:400px;position:relative;perspective:1200px;}
+.carousel-stage{width:100%;height:100%;position:relative;transform-style:preserve-3d;}
+.carousel-card{position:absolute;width:240px;height:310px;top:50%;left:50%;margin:-155px -120px;border-radius:6px;overflow:hidden;border:1px solid rgba(128,0,0,.3);box-shadow:0 20px 60px rgba(0,0,0,.7),0 0 40px rgba(128,0,0,.2);cursor:pointer;backface-visibility:hidden;background:#1a0000;}
+.carousel-card img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .5s ease;filter:brightness(.92) saturate(1.1);}
+.carousel-card:hover img{transform:scale(1.06);}
+.carousel-card .card-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(80,0,0,.85) 0%,transparent 50%);display:flex;align-items:flex-end;padding:16px;opacity:0;transition:opacity .3s;}
+.carousel-card:hover .card-overlay{opacity:1;}
+.card-label{font-family:var(--serif);font-style:italic;font-size:.85rem;color:var(--white);text-shadow:0 1px 4px rgba(0,0,0,.8);}
+.card-placeholder{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;height:100%;color:rgba(245,240,235,.2);}
+.card-placeholder span{font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;}
+.carousel-nav{display:flex;gap:16px;align-items:center;}
+.carousel-btn{width:44px;height:44px;border-radius:50%;background:rgba(128,0,0,.18);border:1px solid rgba(128,0,0,.4);color:var(--white);font-size:1.2rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .3s,transform .2s,box-shadow .3s;}
+.carousel-btn:hover{background:var(--maroon);box-shadow:0 0 20px rgba(128,0,0,.5);transform:scale(1.08);}
+.carousel-dots{display:flex;gap:8px;align-items:center;}
+.cdot{width:6px;height:6px;border-radius:50%;background:rgba(128,0,0,.35);transition:background .3s,transform .3s;cursor:pointer;}
+.cdot.active{background:var(--maroon-light);transform:scale(1.5);}
+
+/* ── Divider antara carousel dan grid ── */
+.section-divider{width:100%;max-width:860px;display:flex;align-items:center;gap:1.2rem;}
+.divider-line{flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(128,0,0,.3),transparent);}
+.divider-label{font-size:.6rem;letter-spacing:.3em;text-transform:uppercase;color:rgba(245,240,235,.25);white-space:nowrap;}
+
+/* ── Grid 6 Foto Statis ── */
+.grid-section-label{font-size:.62rem;letter-spacing:.3em;text-transform:uppercase;color:rgba(245,240,235,.3);text-align:center;}
+
+
+.photo-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:8px;
+  max-width:860px;
+  width:100%;
+}
+/* foto pertama lebih besar — span 2 baris */
+.photo-grid-item{
+  position:relative;overflow:hidden;border-radius:4px;
+  border:1px solid rgba(128,0,0,.22);
+  background:#150000;cursor:pointer;
+  aspect-ratio:1;
+  opacity:0;transform:translateY(20px);
+  transition:opacity .55s ease,transform .55s ease,border-color .3s;
+}
+.photo-grid-item:first-child{grid-row:span 2;aspect-ratio:unset;}
+.photo-grid-item.in{opacity:1;transform:translateY(0);}
+.photo-grid-item:nth-child(1){transition-delay:.05s;}
+.photo-grid-item:nth-child(2){transition-delay:.12s;}
+.photo-grid-item:nth-child(3){transition-delay:.19s;}
+.photo-grid-item:nth-child(4){transition-delay:.26s;}
+.photo-grid-item:nth-child(5){transition-delay:.33s;}
+.photo-grid-item:nth-child(6){transition-delay:.4s;}
+.photo-grid-item img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .55s ease,filter .4s;filter:brightness(.88) saturate(1.05);}
+.photo-grid-item:hover{border-color:rgba(201,168,76,.4);}
+.photo-grid-item:hover img{transform:scale(1.06);filter:brightness(1) saturate(1.15);}
+.grid-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(80,0,0,.82) 0%,rgba(80,0,0,.08) 45%,transparent 70%);display:flex;align-items:flex-end;padding:12px 14px;opacity:0;transition:opacity .35s;}
+.photo-grid-item:hover .grid-overlay{opacity:1;}
+.grid-overlay span{font-family:var(--serif);font-style:italic;font-size:.82rem;color:var(--white);text-shadow:0 1px 4px rgba(0,0,0,.8);}
+.grid-placeholder{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:rgba(245,240,235,.15);min-height:120px;}
+.grid-placeholder .ph-icon{font-size:1.6rem;opacity:.4;}
+.grid-placeholder .ph-num{font-size:.58rem;letter-spacing:.18em;text-transform:uppercase;}
+
+/* ── Lightbox ── */
+#lightbox{display:none;position:fixed;inset:0;z-index:6000;background:rgba(0,0,0,.93);backdrop-filter:blur(8px);align-items:center;justify-content:center;padding:1rem;}
+#lightbox.show{display:flex;animation:lbFadeIn .3s ease;}
+@keyframes lbFadeIn{from{opacity:0}to{opacity:1}}
+#lightbox img{max-width:90vw;max-height:82vh;object-fit:contain;border-radius:4px;border:1px solid rgba(128,0,0,.35);animation:lbZoom .35s cubic-bezier(.34,1.56,.64,1);}
+@keyframes lbZoom{from{transform:scale(.85)}to{transform:scale(1)}}
+#lb-close{position:absolute;top:1.2rem;right:1.2rem;background:rgba(128,0,0,.5);border:1px solid rgba(128,0,0,.7);color:#fff;width:36px;height:36px;border-radius:50%;font-size:.95rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .3s;}
+#lb-close:hover{background:var(--maroon);}
+#lb-caption{position:absolute;bottom:1.5rem;left:50%;transform:translateX(-50%);font-family:var(--serif);font-style:italic;font-size:.9rem;color:var(--white-dim);text-align:center;}
+
+/* ── Message ── */
+#message-section{background:var(--black);text-align:center;}
+.section-eyebrow{font-size:.65rem;font-weight:600;letter-spacing:.4em;text-transform:uppercase;color:var(--maroon-light);margin-bottom:1.5rem;}
+.section-title{font-family:var(--serif);font-size:clamp(1.8rem,4vw,3rem);font-weight:600;line-height:1.2;margin-bottom:1.5rem;}
+.message-card{max-width:560px;background:rgba(128,0,0,.07);border:1px solid rgba(128,0,0,.25);border-radius:4px;padding:2.5rem 2.8rem;position:relative;overflow:hidden;margin-bottom:2.5rem;}
+.message-card::before{content:'"';font-family:var(--serif);font-size:8rem;line-height:1;color:rgba(128,0,0,.12);position:absolute;top:-20px;left:16px;}
+.message-text{font-family:var(--serif);font-style:italic;font-size:clamp(1rem,2.2vw,1.2rem);line-height:1.85;color:var(--white-dim);position:relative;z-index:1;}
+.message-sig{display:block;margin-top:1.2rem;font-size:.68rem;letter-spacing:.3em;text-transform:uppercase;color:var(--gold);opacity:.8;}
+.surprise-btn{display:inline-flex;align-items:center;gap:10px;padding:14px 36px;background:var(--maroon);color:var(--white);border:none;border-radius:2px;font-family:var(--sans);font-size:.75rem;font-weight:600;letter-spacing:.25em;text-transform:uppercase;cursor:pointer;position:relative;overflow:hidden;transition:background .3s,transform .2s,box-shadow .3s;}
+.surprise-btn:hover{background:var(--maroon-light);box-shadow:0 8px 40px rgba(128,0,0,.5);transform:translateY(-2px);}
+
+/* ── Wishes ── */
+#wishes-section{background:var(--deep);gap:3rem;}
+.wishes-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1.2rem;max-width:860px;width:100%;}
+.wish-card{background:rgba(128,0,0,.06);border:1px solid rgba(128,0,0,.18);border-radius:2px;padding:2rem 1.6rem;text-align:center;transition:border-color .3s,background .3s,transform .3s;cursor:default;}
+.wish-card:hover{background:rgba(128,0,0,.12);border-color:rgba(128,0,0,.45);transform:translateY(-4px);}
+.wish-icon{font-size:2rem;margin-bottom:1rem;display:block;}
+.wish-title{font-family:var(--serif);font-size:1.1rem;color:var(--white);margin-bottom:.5rem;}
+.wish-text{font-size:.82rem;color:var(--white-dim);line-height:1.65;font-weight:300;}
+
+/* ── Music ── */
+#music-bar{position:fixed;bottom:2rem;right:2rem;z-index:4000;display:flex;align-items:center;gap:12px;background:rgba(13,13,13,.92);border:1px solid rgba(128,0,0,.35);border-radius:40px;padding:10px 18px 10px 12px;backdrop-filter:blur(12px);box-shadow:0 8px 32px rgba(0,0,0,.6);animation:musicBarIn 1s ease forwards 2.5s;opacity:0;}
+@keyframes musicBarIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.music-btn{width:34px;height:34px;border-radius:50%;background:var(--maroon);border:none;color:#fff;font-size:.9rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .3s,transform .2s;}
+.music-btn:hover{background:var(--maroon-light);transform:scale(1.1);}
+.music-info{display:flex;flex-direction:column;}
+.music-title-bar{font-size:.7rem;font-weight:600;color:var(--white);white-space:nowrap;}
+.music-artist{font-size:.6rem;color:rgba(245,240,235,.45);}
+.music-bars{display:flex;gap:3px;align-items:flex-end;height:16px;}
+.music-bar-dot{width:3px;background:var(--maroon-light);border-radius:2px;animation:barBounce .8s ease-in-out infinite;}
+.music-bar-dot:nth-child(1){height:8px;animation-delay:0s}
+.music-bar-dot:nth-child(2){height:14px;animation-delay:.15s}
+.music-bar-dot:nth-child(3){height:6px;animation-delay:.3s}
+.music-bar-dot:nth-child(4){height:11px;animation-delay:.1s}
+.paused .music-bar-dot{animation-play-state:paused;}
+@keyframes barBounce{0%,100%{transform:scaleY(.5)}50%{transform:scaleY(1)}}
+
+/* ── Countdown ── */
+#countdown-section{background:var(--black);text-align:center;}
+.countdown-grid{display:flex;gap:clamp(1rem,3vw,2.5rem);flex-wrap:wrap;justify-content:center;margin:2rem 0;}
+.count-block{display:flex;flex-direction:column;align-items:center;gap:6px;}
+.count-num{font-family:var(--serif);font-size:clamp(2.8rem,7vw,5rem);font-weight:700;color:var(--white);line-height:1;min-width:2ch;text-align:center;text-shadow:0 0 40px rgba(128,0,0,.5);}
+.count-sep{font-family:var(--serif);font-size:clamp(2rem,5vw,3.5rem);color:rgba(128,0,0,.5);line-height:1;padding-bottom:1.5rem;align-self:flex-start;padding-top:.5rem;}
+.count-label{font-size:.6rem;letter-spacing:.3em;text-transform:uppercase;color:rgba(245,240,235,.35);}
+.count-bar{width:1px;height:30px;background:linear-gradient(to bottom,var(--maroon),transparent);margin-top:4px;}
+
+/* ── Footer ── */
+footer{background:var(--black);border-top:1px solid rgba(128,0,0,.2);padding:3rem 2rem;text-align:center;}
+.footer-heart{font-size:1.5rem;display:block;margin-bottom:1rem;animation:heartbeat 1.5s ease-in-out infinite;}
+@keyframes heartbeat{0%,100%{transform:scale(1)}14%{transform:scale(1.2)}28%{transform:scale(1)}42%{transform:scale(1.1)}56%{transform:scale(1)}}
+.footer-text{font-family:var(--serif);font-style:italic;font-size:.9rem;color:var(--white-dim);}
+.footer-nama{margin-top:1rem;font-size:.62rem;letter-spacing:.3em;text-transform:uppercase;color:rgba(245,240,235,.25);}
+
+/* ── Modal ── */
+#surprise-modal{display:none;position:fixed;inset:0;z-index:5000;align-items:center;justify-content:center;padding:1.5rem;}
+#surprise-modal.show{display:flex;}
+.modal-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.88);backdrop-filter:blur(6px);}
+.modal-box{position:relative;z-index:1;background:var(--deep);border:1px solid rgba(128,0,0,.4);border-radius:4px;padding:3rem 2.5rem;max-width:520px;width:100%;text-align:center;animation:modalIn .5s cubic-bezier(.34,1.56,.64,1) forwards;box-shadow:0 0 0 1px rgba(128,0,0,.15),0 40px 100px rgba(0,0,0,.8);}
+@keyframes modalIn{from{opacity:0;transform:scale(.85) translateY(20px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.modal-crown{font-size:2.8rem;margin-bottom:1rem;display:block;animation:crownFloat 2s ease-in-out infinite;}
+@keyframes crownFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.modal-title{font-family:var(--serif);font-size:clamp(1.4rem,4vw,2rem);font-style:italic;color:var(--gold);margin-bottom:1.5rem;}
+.modal-messages{display:flex;flex-direction:column;gap:1rem;margin-bottom:2rem;}
+.modal-msg{font-family:var(--serif);font-style:italic;font-size:1rem;color:var(--white-dim);line-height:1.7;padding:1rem 1.2rem;background:rgba(128,0,0,.08);border-left:2px solid rgba(128,0,0,.5);text-align:left;border-radius:0 2px 2px 0;opacity:0;transform:translateX(-15px);transition:opacity .5s ease,transform .5s ease;}
+.modal-msg.visible{opacity:1;transform:translateX(0);}
+.modal-close{background:transparent;border:1px solid rgba(128,0,0,.4);color:var(--white-dim);padding:10px 28px;font-family:var(--sans);font-size:.68rem;font-weight:600;letter-spacing:.25em;text-transform:uppercase;cursor:pointer;border-radius:2px;transition:background .3s,color .3s;}
+.modal-close:hover{background:rgba(128,0,0,.2);color:var(--white);}
+
+/* ── Reveal ── */
+.reveal{opacity:0;transform:translateY(30px);transition:opacity .8s ease,transform .8s ease;}
+.reveal.visible{opacity:1;transform:translateY(0);}
+.reveal-delay-1{transition-delay:.1s}.reveal-delay-2{transition-delay:.2s}.reveal-delay-3{transition-delay:.35s}.reveal-delay-4{transition-delay:.5s}
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+
+@media(max-width:640px){
+  section{padding:5rem 1.2rem;}
+  .carousel-card{width:180px;height:240px;margin:-120px -90px;}
+  .photo-grid{grid-template-columns:repeat(2,1fr);}
+  .photo-grid-item:first-child{grid-row:span 1;aspect-ratio:1;}
+  .message-card{padding:1.8rem 1.4rem;}
+  .modal-box{padding:2rem 1.4rem;}
+  #music-bar{right:1rem;bottom:1rem;}
+}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+<canvas id="petal-canvas"></canvas>
+
+<div id="loader">
+  <div class="loader-text">Memuat kejutan…</div>
+  <div class="loader-bar"></div>
+</div>
+
+<div id="music-bar" class="paused">
+  <button class="music-btn" id="music-toggle" aria-label="Play musik">▶</button>
+  <div class="music-info">
+    <span class="music-title-bar">Sempurna</span>
+    <span class="music-artist">♩ Andra & The Backbone</span>
+  </div>
+  <div class="music-bars">
+    <div class="music-bar-dot"></div><div class="music-bar-dot"></div>
+    <div class="music-bar-dot"></div><div class="music-bar-dot"></div>
+  </div>
+</div>
+
+<audio id="bg-music" loop preload="none">
+  <source src="Sempurna.mp3" type="audio/mpeg">
+</audio>
+
+<main>
+
+<!-- HERO -->
+<section id="hero">
+  <p class="hero-eyebrow">Sebuah Persembahan Istimewa</p>
+  <h1 class="hero-title">Selamat Ulang<br>Tahun, <em>Ilva Indriyani</em></h1>
+  <p class="hero-sub">Hari ini langit merayakanmu,<br>dan aku bersyukur kamu ada.</p>
+  <div class="hero-line"></div>
+  <p class="hero-date" id="hero-date">14 Juli 2026</p>
+  <div class="hero-scroll" aria-hidden="true"><div class="scroll-dot"></div></div>
+</section>
+
+<!-- PHOTO PROFILE -->
+<section id="photo-section">
+  <div class="photo-wrapper reveal">
+    <div class="pulse-ring"></div>
+    <div class="pulse-ring"></div>
+    <div class="pulse-ring"></div>
+    <div class="photo-frame" id="photo-frame" title="Klik untuk kejutan!">
+      <div class="photo-inner">
+          <img src="images/3.jpeg" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;">
+        <p style="position:absolute;bottom:22%;font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.2);">Foto Profil</p>
+      </div>
+    </div>
+    <div class="orbit orbit-1"><div class="orbit-dot"></div></div>
+    <div class="orbit orbit-2"><div class="orbit-dot"></div></div>
+  </div>
+  <div class="photo-label reveal reveal-delay-2">
+    <p class="photo-name" id="person-name">Ilva Indriyani</p>
+    <p class="photo-tagline" id="person-age">— 23 Tahun yang Menakjubkan —</p>
+  </div>
+</section>
+
+<!-- GALLERY — CAROUSEL + GRID 6 FOTO -->
+<section id="gallery-section">
+  <p class="gallery-eyebrow reveal">Kenangan Bersama</p>
+  <h2 class="gallery-title reveal reveal-delay-1">
+    Galeri Foto<br>
+    <em style="font-family:var(--serif);font-style:italic;background:linear-gradient(135deg,var(--maroon-light),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">Momen Indah</em>
+  </h2>
+
+  <!-- Upload zone -->
+  <div class="gallery-upload-zone reveal reveal-delay-2">
+    <input type="file" id="gallery-upload" accept="image/*" multiple>
+    <span class="upload-icon">📸</span>
+    <span class="upload-text">Unggah Foto Kenangan</span>
+    <span class="upload-sub">Foto pertama masuk ke Carousel · Foto 1–7 masuk ke Galeri bawah</span>
+  </div>
+
+  <!-- 3D Carousel -->
+  <p class="carousel-label reveal">— Slideshow Kenangan —</p>
+  <div class="carousel-scene reveal reveal-delay-1">
+    <div class="carousel-stage" id="carousel-stage"></div>
+  </div>
+  <div class="carousel-nav reveal reveal-delay-2">
+    <button class="carousel-btn" id="prev-btn">&#8592;</button>
+    <div class="carousel-dots" id="carousel-dots"></div>
+    <button class="carousel-btn" id="next-btn">&#8594;</button>
+  </div>
+
+  <!-- Divider -->
+  <div class="section-divider reveal">
+    <div class="divider-line"></div>
+    <span class="divider-label">Galeri Foto</span>
+    <div class="divider-line"></div>
+  </div>
+
+  <!-- Grid 8 Foto Statis -->
+<p class="grid-section-label reveal">— 8 Momen Terindah —</p>
+<div class="photo-grid" id="photo-grid">
+  <div class="photo-grid-item" data-idx="0" onclick="openLb(0)">
+    <div class="grid-placeholder"><span class="ph-icon">📷</span><span class="ph-num">Foto 1</span></div>
+    <div class="grid-overlay"><span id="gl0">Kenangan Indah</span></div>
+  </div>
+  <div class="photo-grid-item" data-idx="1" onclick="openLb(1)">
+    <div class="grid-placeholder"><span class="ph-icon">📷</span><span class="ph-num">Foto 2</span></div>
+    <div class="grid-overlay"><span id="gl1">Momen Bahagia</span></div>
+  </div>
+  <div class="photo-grid-item" data-idx="2" onclick="openLb(2)">
+    <div class="grid-placeholder"><span class="ph-icon">📷</span><span class="ph-num">Foto 3</span></div>
+    <div class="grid-overlay"><span id="gl2">Senyum Terbaik</span></div>
+  </div>
+  <div class="photo-grid-item" data-idx="3" onclick="openLb(3)">
+    <div class="grid-placeholder"><span class="ph-icon">📷</span><span class="ph-num">Foto 4</span></div>
+    <div class="grid-overlay"><span id="gl3">Hari yang Cerah</span></div>
+  </div>
+  <div class="photo-grid-item" data-idx="4" onclick="openLb(4)">
+    <div class="grid-placeholder"><span class="ph-icon">📷</span><span class="ph-num">Foto 5</span></div>
+    <div class="grid-overlay"><span id="gl4">Bersama Selamanya</span></div>
+  </div>
+  <div class="photo-grid-item" data-idx="5" onclick="openLb(5)">
+    <div class="grid-placeholder"><span class="ph-icon">📷</span><span class="ph-num">Foto 6</span></div>
+    <div class="grid-overlay"><span id="gl5">Momen Istimewa</span></div>
+  </div>
+  <div class="photo-grid-item" data-idx="6" onclick="openLb(6)">
+    <div class="grid-placeholder"><span class="ph-icon">📷</span><span class="ph-num">Foto 7</span></div>
+    <div class="grid-overlay"><span id="gl6">Mata Terindah</span></div>
+  </div>
+</div>
+
+<!-- Lightbox -->
+<div id="lightbox" onclick="closeLb()">
+  <button id="lb-close" onclick="closeLb()">✕</button>
+  <img id="lb-img" src="" alt="">
+  <div id="lb-caption"></div>
+</div>
+
+<!-- MESSAGE -->
+<section id="message-section">
+  <p class="section-eyebrow reveal">Dari Hati yang Tulus</p>
+  <h2 class="section-title reveal reveal-delay-1">Sebuah Pesan<br>Untukmu</h2>
+  <div class="message-card reveal reveal-delay-2">
+    <p class="message-text">Hari ini, dunia menjadi sedikit lebih indah karena kamu ada di dalamnya. Setiap tawa yang kamu hadirkan, setiap langkah yang kamu ambil — semuanya begitu berarti. Semoga di usiamu yang baru ini, setiap impianmu terbuka seperti bunga yang mekar, dan kebahagiaan selalu menemukanmu di mana pun kamu berada.</p>
+    <span class="message-sig">— Dari seseorang yang peduli padamu 🖤</span>
+  </div>
+  <button class="surprise-btn reveal reveal-delay-3" onclick="openSurprise()">
+    <span>🎁</span> Buka Kado Rahasia
+  </button>
+</section>
+
+<!-- WISHES -->
+<section id="wishes-section">
+  <p class="section-eyebrow reveal">Harapan & Doa</p>
+  <h2 class="section-title reveal reveal-delay-1">Semoga Kamu Selalu…</h2>
+  <div class="wishes-grid">
+    <div class="wish-card reveal reveal-delay-1"><span class="wish-icon">🌹</span><h3 class="wish-title">Bahagia</h3><p class="wish-text">Semoga setiap harimu dipenuhi senyuman yang tulus dan momen yang membuatmu bersyukur.</p></div>
+    <div class="wish-card reveal reveal-delay-2"><span class="wish-icon">✨</span><h3 class="wish-title">Bersinar</h3><p class="wish-text">Cahayamu tak pernah padam. Teruslah bersinar dan menginspirasi orang-orang di sekitarmu.</p></div>
+    <div class="wish-card reveal reveal-delay-3"><span class="wish-icon">🦋</span><h3 class="wish-title">Berkembang</h3><p class="wish-text">Seperti kupu-kupu yang menemukan sayapnya — kamu bebas terbang menuju segala yang kamu impikan.</p></div>
+    <div class="wish-card reveal reveal-delay-4"><span class="wish-icon">💫</span><h3 class="wish-title">Dicintai</h3><p class="wish-text">Kamu layak mendapatkan semua cinta di dunia ini. Jangan pernah lupa betapa berharganya dirimu.</p></div>
+  </div>
+</section>
+
+<!-- COUNTDOWN -->
+<section id="countdown-section">
+  <p class="section-eyebrow reveal">Merayakan Hari Istimewa</p>
+  <h2 class="section-title reveal reveal-delay-1">Sudah Berapa Lama<br>Kamu Mewarnai Dunia?</h2>
+  <div class="countdown-grid reveal reveal-delay-2">
+    <div class="count-block"><span class="count-num" id="c-years">0</span><div class="count-bar"></div><span class="count-label">Tahun</span></div>
+    <div class="count-sep">:</div>
+    <div class="count-block"><span class="count-num" id="c-months">0</span><div class="count-bar"></div><span class="count-label">Bulan</span></div>
+    <div class="count-sep">:</div>
+    <div class="count-block"><span class="count-num" id="c-days">0</span><div class="count-bar"></div><span class="count-label">Hari</span></div>
+    <div class="count-sep">:</div>
+    <div class="count-block"><span class="count-num" id="c-hours">0</span><div class="count-bar"></div><span class="count-label">Jam</span></div>
+  </div>
+  <p class="reveal reveal-delay-3" style="font-family:var(--serif);font-style:italic;color:rgba(245,240,235,.4);font-size:.9rem;margin-top:.5rem;">Setiap detiknya adalah anugerah yang tak ternilai.</p>
+</section>
+
+</main>
+
+<footer>
+  <span class="footer-heart">❤️</span>
+  <p class="footer-text">Dibuat dengan sepenuh hati, khusus untukmu.</p>
+  <p class="footer-nama" id="footer-nama">© ~r</p>
+</footer>
+
+<div id="surprise-modal" role="dialog" aria-modal="true">
+  <div class="modal-backdrop" onclick="closeSurprise()"></div>
+  <div class="modal-box">
+    <span class="modal-crown">👑</span>
+    <h2 class="modal-title">Kado Rahasiamu</h2>
+    <div class="modal-messages">
+      <div class="modal-msg">🌹 Kamu adalah satu dari sedikit orang yang bisa membuat dunia terasa lebih hangat hanya dengan kehadiranmu.</div>
+      <div class="modal-msg">✨ Di hari ulang tahunmu ini, aku ingin kamu tahu bahwa kamu dicintai — lebih dari yang kamu bayangkan.</div>
+      <div class="modal-msg">💌 Semoga setiap doa yang kamu panjatkan malam ini, dikabulkan satu per satu. Kamu layak mendapatkan segalanya.</div>
+    </div>
+    <button class="modal-close" onclick="closeSurprise()">Tutup ✕</button>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════
+// CONFIG — UBAH BAGIAN INI
+// ════════════════════════════════════
+const CONFIG = {
+  name:        'Ilva Indriyani',
+  age:         23,
+  birthdate:   '2003-07-14',
+  musicFile:   'Sempurna.mp3',
+  musicTitle:  'Sempurna',
+  musicArtist: '♩ Andra & The Backbone',
+  footerSign:  '~r',
+
+  // Label untuk 6 kotak grid bawah
+  gridLabels: [
+    'Kenangan Indah',
+    'Momen Bahagia',
+    'Senyum Terbaik',
+    'Hari yang Cerah',
+    'Bersama Selamanya',
+    'Momen Istimewa',
+    'Kenangan Indah',
+    'Canda Tawa'
+  ],
+
+  // Foto default carousel (path relatif, misal 'images/1.jpeg')
+  defaultCarousel: [
+    { url:'images/1.jpeg', name:'Selamat Ulang Tahun' },
+    { url:'images/2.jpeg', name:'Selamat Ulang Tahun' },
+    { url:'images/6.jpeg', name:'Selamat Ulang Tahun' },
+    { url:'images/4.jpeg', name:'Selamat Ulang Tahun' },
+    { url:'images/5.jpeg', name:'Selamat Ulang Tahun' },
+    { url:'images/7.jpeg', name:'Selamat Ulang Tahun' },
+  ],
+
+  // Foto default grid 6 (path relatif, kosongkan '' jika belum ada)
+  defaultGrid: [
+    'images/4.jpeg',
+    'images/2.jpeg',
+    'images/1.jpeg',
+    'images/5.jpeg',
+    'images/6.jpeg',
+    'images/3.jpeg',
+    'images/7.jpeg',
+  ],
+};
+
+// ── Apply config ──────────────────────────────────────────
+document.getElementById('person-name').textContent  = CONFIG.name;
+document.getElementById('person-age').textContent   = `— ${CONFIG.age} Tahun yang Menakjubkan —`;
+document.getElementById('footer-nama').textContent  = `© ${new Date().getFullYear()} | ${CONFIG.footerSign}`;
+document.querySelector('.music-title-bar').textContent = CONFIG.musicTitle;
+document.querySelector('.music-artist').textContent    = CONFIG.musicArtist;
+const bd = new Date(CONFIG.birthdate.replace(/-/g,'/'));
+const bdThisYear = new Date(new Date().getFullYear(), bd.getMonth(), bd.getDate());
+document.getElementById('hero-date').textContent = bdThisYear.toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'});
+
+// ── Loader ────────────────────────────────────────────────
+window.addEventListener('load', ()=> setTimeout(()=> document.getElementById('loader').classList.add('gone'), 1600));
+
+// ── Custom cursor ─────────────────────────────────────────
+const cur = document.getElementById('cursor'), ring = document.getElementById('cursor-ring');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove', e=>{ mx=e.clientX; my=e.clientY; });
+(function moveCursor(){
+  rx+=(mx-rx)*.12; ry+=(my-ry)*.12;
+  cur.style.left=mx+'px'; cur.style.top=my+'px';
+  ring.style.left=rx+'px'; ring.style.top=ry+'px';
+  requestAnimationFrame(moveCursor);
+})();
+document.querySelectorAll('button,a,.wish-card,.photo-frame,.photo-grid-item,.gallery-upload-zone').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{ cur.style.transform='translate(-50%,-50%) scale(2)'; cur.style.background='rgba(201,168,76,.8)'; ring.style.width=ring.style.height='50px'; });
+  el.addEventListener('mouseleave',()=>{ cur.style.transform='translate(-50%,-50%) scale(1)'; cur.style.background='var(--maroon)'; ring.style.width=ring.style.height='36px'; });
+});
+
+// ════════════════════════════════════
+// 3D CAROUSEL
+// ════════════════════════════════════
+let carouselPhotos = CONFIG.defaultCarousel.map(p=>({...p}));
+let curIdx = 0, autoTimer = null;
+const stage   = document.getElementById('carousel-stage');
+const dotsEl  = document.getElementById('carousel-dots');
+
+function buildCarousel(){
+  stage.innerHTML = ''; dotsEl.innerHTML = '';
+  const N = carouselPhotos.length;
+  carouselPhotos.forEach((photo, i)=>{
+    const card = document.createElement('div'); card.className = 'carousel-card';
+    if(photo.url){
+      const img = document.createElement('img'); img.src = photo.url; img.alt = photo.name;
+      card.appendChild(img);
+    } else {
+      const ph = document.createElement('div'); ph.className = 'card-placeholder';
+      ph.innerHTML = `<span style="font-size:2rem">📷</span><span>${photo.name || 'Foto '+(i+1)}</span>`;
+      card.appendChild(ph);
+    }
+    const ov = document.createElement('div'); ov.className = 'card-overlay';
+    ov.innerHTML = `<span class="card-label">${photo.name||''}</span>`; card.appendChild(ov);
+    card.addEventListener('click', ()=>{ curIdx=i; updateCarousel(true); });
+    stage.appendChild(card);
+
+    const dot = document.createElement('div'); dot.className='cdot'+(i===curIdx?' active':'');
+    dot.addEventListener('click',()=>{ curIdx=i; updateCarousel(true); });
+    dotsEl.appendChild(dot);
+  });
+  updateCarousel(false);
+}
+
+function updateCarousel(anim){
+  const N = carouselPhotos.length;
+  const angleStep = 360/N;
+  const radius = Math.max(240, N*55);
+  stage.querySelectorAll('.carousel-card').forEach((card,i)=>{
+    const angle = (i-curIdx)*angleStep;
+    const rad   = angle*Math.PI/180;
+    const x = Math.sin(rad)*radius;
+    const z = Math.cos(rad)*radius - radius;
+    const sc = 0.72 + 0.28*Math.cos(rad);
+    const op = 0.25 + 0.75*((Math.cos(rad)+1)/2);
+    card.style.transform  = `translateX(${x}px) translateZ(${z}px) scale(${sc})`;
+    card.style.opacity    = op;
+    card.style.zIndex     = Math.round((Math.cos(rad)+1)*50);
+    card.style.transition = anim ? 'transform .7s cubic-bezier(.22,1,.36,1),opacity .7s ease' : 'none';
+    card.style.filter     = `brightness(${0.45+0.55*((Math.cos(rad)+1)/2)})`;
+  });
+  dotsEl.querySelectorAll('.cdot').forEach((d,i)=> d.classList.toggle('active', i===curIdx));
+}
+
+function nextSlide(){ curIdx=(curIdx+1)%carouselPhotos.length; updateCarousel(true); }
+function prevSlide(){ curIdx=(curIdx-1+carouselPhotos.length)%carouselPhotos.length; updateCarousel(true); }
+document.getElementById('next-btn').addEventListener('click', nextSlide);
+document.getElementById('prev-btn').addEventListener('click', prevSlide);
+function startAuto(){ autoTimer=setInterval(nextSlide,3500); }
+function stopAuto (){ clearInterval(autoTimer); }
+stage.addEventListener('mouseenter', stopAuto);
+stage.addEventListener('mouseleave', startAuto);
+let txStart=0;
+stage.addEventListener('touchstart',e=>{txStart=e.touches[0].clientX;},{passive:true});
+stage.addEventListener('touchend',  e=>{ const dx=e.changedTouches[0].clientX-txStart; if(Math.abs(dx)>40) dx<0?nextSlide():prevSlide(); });
+document.addEventListener('keydown', e=>{ if(e.key==='ArrowRight')nextSlide(); if(e.key==='ArrowLeft')prevSlide(); });
+
+// ════════════════════════════════════
+// GRID 6 FOTO
+// ════════════════════════════════════
+let gridUrls  = [...CONFIG.defaultGrid];
+
+function renderGrid(){
+  const items = document.querySelectorAll('.photo-grid-item');
+  items.forEach((item,i)=>{
+    const url   = gridUrls[i]||'';
+    const label = CONFIG.gridLabels[i]||`Foto ${i+1}`;
+    const ph    = item.querySelector('.grid-placeholder');
+    const glEl  = document.getElementById('gl'+i);
+    if(glEl) glEl.textContent = label;
+    item.dataset.caption = label;
+
+    const oldImg = item.querySelector('img'); if(oldImg) oldImg.remove();
+    if(url){
+      const img=document.createElement('img'); img.src=url; img.alt=label;
+      item.insertBefore(img, item.firstChild);
+      if(ph) ph.style.display='none';
+    } else {
+      if(ph){ ph.style.display=''; ph.querySelector('.ph-num').textContent=`Foto ${i+1}`; }
+    }
+  });
+}
+renderGrid();
+
+// ── Upload: carousel menerima SEMUA, grid ambil 6 pertama ──
+document.getElementById('gallery-upload').addEventListener('change', e=>{
+  const files = Array.from(e.target.files);
+  if(!files.length) return;
+
+  // Reset carousel ke foto baru
+  carouselPhotos = files.map((f,i)=>({
+    url:  URL.createObjectURL(f),
+    name: f.name.replace(/\.[^.]+$/,'')||`Kenangan ${i+1}`,
+  }));
+  curIdx=0; buildCarousel(); startAuto();
+
+  // Grid: ambil 6 foto pertama
+  const sixFiles = files.slice(0,6);
+  sixFiles.forEach((f,i)=>{
+    gridUrls[i] = URL.createObjectURL(f);
+    CONFIG.gridLabels[i] = f.name.replace(/\.[^.]+$/,'')||CONFIG.gridLabels[i];
+  });
+  renderGrid();
+
+  // Animate grid items in
+  document.querySelectorAll('.photo-grid-item').forEach((item,i)=>{
+    item.classList.remove('in');
+    setTimeout(()=> item.classList.add('in'), 60+i*90);
+  });
+
+  e.target.value='';
+});
+
+// ── Lightbox ──────────────────────────────────────────────
+function openLb(idx){
+  const url=gridUrls[idx]||''; if(!url) return;
+  document.getElementById('lb-img').src = url;
+  document.getElementById('lb-caption').textContent = CONFIG.gridLabels[idx]||'';
+  document.getElementById('lightbox').classList.add('show');
+  document.body.style.overflow='hidden';
+}
+function closeLb(){
+  document.getElementById('lightbox').classList.remove('show');
+  document.body.style.overflow='';
+}
+
+// ── Floating Hearts ───────────────────────────────────────
+const HEARTS = ['❤️','🤍','♡','♥','💕','🌹'];
+function spawnHeart(){
+  const h=document.createElement('div'); h.className='fheart';
+  h.textContent = HEARTS[Math.floor(Math.random()*HEARTS.length)];
+  h.style.left  = Math.random()*100+'vw';
+  h.style.bottom= '-30px';
+  const dur=6+Math.random()*5;
+  h.style.animationDuration=dur+'s';
+  h.style.fontSize=(10+Math.random()*14)+'px';
+  document.body.appendChild(h);
+  setTimeout(()=>h.remove(), dur*1000+200);
+}
+setInterval(spawnHeart, 2000);
+
+// ── Petals canvas ─────────────────────────────────────────
+const canvas=document.getElementById('petal-canvas'), ctx=canvas.getContext('2d');
+function rsz(){ canvas.width=innerWidth; canvas.height=innerHeight; }
+rsz(); window.addEventListener('resize',()=>{ rsz(); buildCarousel(); });
+const SHAPES=['petal','star','dot'];
+class Petal{
+  constructor(){ this.reset(true); }
+  reset(init){
+    this.x=Math.random()*canvas.width;
+    this.y=init?Math.random()*-canvas.height:-20;
+    this.size=Math.random()*8+4; this.speed=Math.random()*1.2+.3;
+    this.drift=(Math.random()-.5)*.6; this.rot=Math.random()*Math.PI*2;
+    this.rotSpeed=(Math.random()-.5)*.04; this.opacity=Math.random()*.5+.2;
+    this.shape=SHAPES[Math.floor(Math.random()*SHAPES.length)];
+    const r=Math.random();
+    this.color=r<.5?`rgba(128,0,0,${this.opacity})`:r<.75?`rgba(201,168,76,${this.opacity*.7})`:`rgba(220,60,60,${this.opacity*.6})`;
+  }
+  update(){ this.y+=this.speed; this.x+=this.drift+Math.sin(this.y*.015)*.4; this.rot+=this.rotSpeed; if(this.y>canvas.height+20)this.reset(false); }
+  draw(){
+    ctx.save(); ctx.translate(this.x,this.y); ctx.rotate(this.rot); ctx.globalAlpha=this.opacity; ctx.fillStyle=this.color;
+    if(this.shape==='petal'){ ctx.beginPath(); ctx.ellipse(0,0,this.size*.5,this.size,0,0,Math.PI*2); ctx.fill(); }
+    else if(this.shape==='star'){
+      ctx.beginPath();
+      for(let i=0;i<5;i++){const a=(i*4*Math.PI)/5-Math.PI/2,r2=i%2===0?this.size*.8:this.size*.35;i===0?ctx.moveTo(Math.cos(a)*r2,Math.sin(a)*r2):ctx.lineTo(Math.cos(a)*r2,Math.sin(a)*r2);}
+      ctx.closePath(); ctx.fill();
+    } else { ctx.beginPath(); ctx.arc(0,0,this.size*.4,0,Math.PI*2); ctx.fill(); }
+    ctx.restore();
+  }
+}
+const petals=Array.from({length:70},()=>new Petal());
+(function animP(){ ctx.clearRect(0,0,canvas.width,canvas.height); petals.forEach(p=>{p.update();p.draw();}); requestAnimationFrame(animP); })();
+
+// ── Reveal on scroll ──────────────────────────────────────
+const revObs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{ if(e.isIntersecting){e.target.classList.add('visible');revObs.unobserve(e.target);} });
+},{threshold:.1});
+document.querySelectorAll('.reveal').forEach(el=>revObs.observe(el));
+
+// Grid stagger animate on scroll
+const gridObs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      e.target.querySelectorAll('.photo-grid-item').forEach((item,i)=>{
+        setTimeout(()=>item.classList.add('in'),50+i*90);
+      });
+      gridObs.unobserve(e.target);
+    }
+  });
+},{threshold:.08});
+const pgrid=document.getElementById('photo-grid');
+if(pgrid) gridObs.observe(pgrid);
+
+// ── Surprise modal ────────────────────────────────────────
+function openSurprise(){
+  const modal=document.getElementById('surprise-modal');
+  modal.classList.add('show'); document.body.style.overflow='hidden';
+  modal.querySelectorAll('.modal-msg').forEach((m,i)=>{ m.classList.remove('visible'); setTimeout(()=>m.classList.add('visible'),200+i*280); });
+  for(let i=0;i<20;i++){ const p=new Petal(); p.y=canvas.height*.7; p.x=canvas.width/2+(Math.random()-.5)*100; p.speed=Math.random()*3+2; petals.push(p); }
+  setTimeout(()=>{ while(petals.length>70)petals.pop(); },3000);
+}
+function closeSurprise(){ document.getElementById('surprise-modal').classList.remove('show'); document.body.style.overflow=''; }
+document.getElementById('photo-frame').addEventListener('click', openSurprise);
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ closeLb(); closeSurprise(); } });
+
+// ── Music ──────────────────────────────────────────────────
+const audio=document.getElementById('bg-music'), mBtn=document.getElementById('music-toggle'), mBar=document.getElementById('music-bar');
+let playing=false;
+mBtn.addEventListener('click',()=>{
+  playing ? (audio.pause(),mBtn.textContent='▶',mBar.classList.add('paused'),playing=false)
+           : (audio.play().catch(()=>{}),mBtn.textContent='⏸',mBar.classList.remove('paused'),playing=true);
+});
+
+// ── Age counter ────────────────────────────────────────────
+function calcAge(){
+  const birth=new Date(CONFIG.birthdate.replace(/-/g,'/')), now=new Date();
+  let y=now.getFullYear()-birth.getFullYear(), m=now.getMonth()-birth.getMonth(), d=now.getDate()-birth.getDate();
+  if(d<0){m--;d+=new Date(now.getFullYear(),now.getMonth(),0).getDate();}
+  if(m<0){y--;m+=12;}
+  document.getElementById('c-years').textContent=y;
+  document.getElementById('c-months').textContent=m;
+  document.getElementById('c-days').textContent=d;
+  document.getElementById('c-hours').textContent=now.getHours();
+}
+calcAge(); setInterval(calcAge,60000);
+
+// Musik otomatis play setelah user pertama kali klik/tap di mana saja
+document.addEventListener('click', function startOnce() {
+  audio.play().catch(()=>{});
+  mBtn.textContent = '⏸';
+  mBar.classList.remove('paused');
+  playing = true;
+  document.removeEventListener('click', startOnce); // hanya sekali
+}, { once: true });
+// ── Build carousel on load ────────────────────────────────
+buildCarousel(); startAuto();
+</script>
+</body>
+</html>
